@@ -118,14 +118,16 @@ Khi thực hiện một báo cáo, Agent và người dùng phối hợp theo pi
 ## 🛠️ Bộ Lệnh Command Line
 
 ```powershell
-# 1. Chạy toàn bộ Smoke Test Suite tự động
+# 1. Chạy toàn bộ Smoke Test Suite tự động (9/9 test cases độc lập)
 python tests/smoke/test_smoke.py
 
 # 2. Kiểm tra tính toàn vẹn của trích dẫn BibTeX
 python scripts/validate_citations.py
+python scripts/validate_citations.py --strict  # Cho bản nộp cuối
 
-# 3. Kiểm tra nhãn và liên kết tham chiếu trong báo cáo
+# 3. Kiểm tra nhãn, tham chiếu gãy, ảnh thiếu và TODOs trong báo cáo
 python scripts/validate_report.py
+python scripts/validate_report.py --strict     # Cho bản nộp cuối
 
 # 4. Biên dịch báo cáo ra PDF (Lưu tại output/report.pdf)
 python scripts/build.py

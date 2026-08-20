@@ -48,9 +48,15 @@ Final build (Biên dịch bản nộp chính thức)
 - [ ] Thuật ngữ chuyên ngành có được dùng thống nhất từ đầu đến cuối không?
 - [ ] **Chạy kiểm tra tự động**:
   ```powershell
+  # Trong quá trình soạn thảo:
   python scripts/validate_citations.py
   python scripts/validate_report.py
+
+  # Khi chuẩn bị nộp bản cuối (Bắt buộc kiểm tra nghiêm ngặt):
+  python scripts/validate_citations.py --strict
+  python scripts/validate_report.py --strict
   ```
+- [ ] Không còn thẻ `\todo{...}`, `\note{...}` hoặc thông tin metadata mẫu trong tài liệu.
 - [ ] Không có nhãn tham chiếu bị lỗi `??` (broken reference) hoặc hình ảnh bị thiếu.
 - [ ] 100% trích dẫn trong văn bản đều có trong `src/bibliography.bib`.
 

@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 r"""
 Script kiểm tra tính toàn vẹn của trích dẫn (Citations & BibTeX):
-1. Tìm tất cả các \cite{...} trong thư mục src/
+1. Tìm tất cả các \cite, \autocite, \parencite, \textcite, \footcite... trong thư mục src/
 2. Tìm tất cả các key trong src/bibliography.bib
 3. Báo cáo:
+   - File .bib bị thiếu -> Báo lỗi
    - Các trích dẫn trong văn bản bị thiếu trong .bib (Missing citations) -> Báo lỗi
    - Các mục trong .bib không được sử dụng (Unused entries) -> Cảnh báo
+   - Hỗ trợ cờ --strict cho bản nộp cuối (yêu cầu bắt buộc có citation thật)
 """
 
+import argparse
 import os
 import re
 import sys
@@ -23,12 +26,12 @@ if sys.platform == 'win32':
         pass
 
 def get_bib_keys(bib_file_path):
-    keys = set()
     if not os.path.exists(bib_file_path):
-        print(f"[ERROR] Không tìm thấy file: {bib_file_path}")
-        return keys
+        print(f"[ERROR] Không tìm thấy file cơ sở dữ liệu trích dẫn: {bib_file_path}")
+        return None
     
-    with open(bib_file_path, 'r', encoding='utf-8') as f:
+    keys = set()
+    with open(bib_file_path, 'r', encoding='utf-8', errors='replace') as f:
         lines = f.readlines()
     
     # Bỏ qua dòng comment (%)
@@ -43,15 +46,21 @@ def get_bib_keys(bib_file_path):
 
 def get_cited_keys(src_dir):
     cited_keys = {}
-    cite_pattern = re.compile(r'\\(?:cite|parencite|textcite|citep|citet)\s*\{([^}]+)\}')
+    if not src_dir.exists():
+        return cited_keys
+    
+    # Hỗ trợ đầy đủ các lệnh cite chuẩn và biblatex kèm 0-2 cặp ngoặc vuông [arg1][arg2]
+    cite_pattern = re.compile(
+        r'\\(?:cite|autocite|textcite|parencite|footcite|nocite|citep|citet|citeauthor|citeyear|Cite|Autocite|Textcite|Parencite|Footcite)'
+        r'(?:\[[^\]]*\]){0,2}\s*\{([^}]+)\}'
+    )
     
     for root, _, files in os.walk(src_dir):
         for file in files:
             if file.endswith('.tex'):
                 file_path = os.path.join(root, file)
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
                     for line_num, line in enumerate(f, 1):
-                        # Bỏ qua dòng comment LaTeX (%)
                         clean_line = re.sub(r'(?<!\\)%.*', '', line)
                         for match in cite_pattern.finditer(clean_line):
                             raw_keys = match.group(1)
@@ -64,15 +73,30 @@ def get_cited_keys(src_dir):
     return cited_keys
 
 def main():
-    base_dir = Path(__file__).resolve().parent.parent
+    parser = argparse.ArgumentParser(description="Kiểm tra tính toàn vẹn của trích dẫn BibTeX")
+    parser.add_argument("--base-dir", type=str, default=None, help="Đường dẫn thư mục gốc dự án (chứa src/)")
+    parser.add_argument("--strict", action="store_true", help="Chế độ nghiêm ngặt cho bản nộp cuối (yêu cầu bắt buộc có trích dẫn thật)")
+    args = parser.parse_args()
+
+    if args.base_dir:
+        base_dir = Path(args.base_dir).resolve()
+    elif (Path.cwd() / 'src').exists():
+        base_dir = Path.cwd().resolve()
+    else:
+        base_dir = Path(__file__).resolve().parent.parent
+
     src_dir = base_dir / 'src'
     bib_file = src_dir / 'bibliography.bib'
 
     print("=" * 60)
-    print(" BẮT ĐẦU KIỂM TRA TRÍCH DẪN (CITATION VALIDATION)")
+    print(f" BẮT ĐẦU KIỂM TRA TRÍCH DẪN (CITATION VALIDATION{' - STRICT MODE' if args.strict else ''})")
     print("=" * 60)
 
     bib_keys = get_bib_keys(bib_file)
+    if bib_keys is None:
+        print(f"[FAIL] File bibliography.bib không tồn tại tại: {bib_file}")
+        sys.exit(1)
+
     cited_dict = get_cited_keys(src_dir)
     cited_keys = set(cited_dict.keys())
 
@@ -80,9 +104,21 @@ def main():
     print(f"[*] Tổng số unique citations trong src/: {len(cited_keys)}")
     print("-" * 60)
 
+    has_error = False
+
+    # Kiểm tra chế độ strict
+    if args.strict:
+        if len(cited_keys) == 0:
+            print("[FAIL-STRICT] Báo cáo cuối cùng chưa có bất kỳ trích dẫn nào trong văn bản!")
+            has_error = True
+        if len(bib_keys) == 0:
+            print("[FAIL-STRICT] File bibliography.bib đang trống, chưa có tài liệu tham khảo!")
+            has_error = True
+
     # 1. Kiểm tra trích dẫn thiếu (Missing citations)
     missing = cited_keys - bib_keys
     if missing:
+        has_error = True
         print(f"[FAIL] PHÁT HIỆN {len(missing)} TRÍCH DẪN THIẾU TRONG BIBLIOGRAPHY:")
         for m in sorted(missing):
             locations = ", ".join([f"{f}:{l}" for f, l in cited_dict[m]])
@@ -100,10 +136,11 @@ def main():
         print("\n[PASS] Tất cả các mục trong .bib đều được sử dụng.")
 
     print("=" * 60)
-    if missing:
+    if has_error:
+        print(">> KẾT LUẬN: Phát hiện lỗi trích dẫn cần khắc phục!")
         sys.exit(1)
     else:
-        print(">> KẾT LUẬN: Hợp lệ 100%!")
+        print(">> KẾT LUẬN: Trích dẫn hợp lệ 100%!")
         sys.exit(0)
 
 if __name__ == '__main__':

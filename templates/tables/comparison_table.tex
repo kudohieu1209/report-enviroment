@@ -1,0 +1,19 @@
+% ==============================================================================
+% Template: Bảng So Sánh Chuẩn Booktabs
+% ==============================================================================
+
+\begin{table}[htbp]
+\centering
+\caption{Bảng so sánh chi tiết các chỉ số đánh giá kỹ thuật}
+\label{tab:sample-comparison}
+\begin{tabularx}{\textwidth}{lXccc}
+\toprule
+\textbf{Phương pháp} & \textbf{Đặc điểm chính} & \textbf{Độ trễ (ms)} & \textbf{Bộ nhớ (MB)} & \textbf{F1-Score (\%)} \\
+\midrule
+Phương pháp truyền thống & Dựa trên luật và biểu thức chính quy & 12.5 & 45.0 & 74.2 \\
+Mô hình Machine Learning & Random Forest + TF-IDF & 28.4 & 120.5 & 83.6 \\
+Mô hình Deep Learning   & BiLSTM + Attention & 65.2 & 450.0 & 88.9 \\
+\textbf{Giải pháp đề xuất} & \textbf{Lightweight Transformer + Distillation} & \textbf{18.6} & \textbf{160.0} & \textbf{91.8} \\
+\bottomrule
+\end{tabularx}
+\end{table}

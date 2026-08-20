@@ -1,0 +1,67 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+% 1. Nạp cấu hình Packages, Macros và Metadata
+\input{src/config/packages.tex}
+\input{src/config/macros.tex}
+\input{src/config/metadata.tex}
+
+% Nạp cơ sở dữ liệu trích dẫn
+\addbibresource{src/bibliography.bib}
+
+\begin{document}
+
+% ------------------------------------------------------------------------------
+% Trang Bìa & Các Trang Thủ Tục
+% ------------------------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\large \textbf{\MakeUppercase{\University}}}\\[0.3cm]
+    {\large \textbf{\MakeUppercase{\Department}}}\\[1.5cm]
+    
+    \includegraphics[width=3.5cm]{figures/diagrams/logo.pdf}\\[1.5cm]
+    
+    {\Huge \textbf{\ReportTitle}}\\[0.5cm]
+    {\Large \textit{\ReportSubtitle}}\\[2cm]
+    
+    \begin{minipage}{0.8\textwidth}
+        \large
+        \textbf{Sinh viên thực hiện:} \AuthorName{} (\StudentId)\\[0.2cm]
+        \textbf{Giảng viên hướng dẫn:} \SupervisorName\\[0.2cm]
+        \textbf{Cán bộ hướng dẫn cơ sở:} \AdvisorName\\[0.2cm]
+        \textbf{Đơn vị thực tập:} \CompanyName
+    \end{minipage}
+    
+    \vfill
+    {\large \Location, \ReportDate}
+\end{titlepage}
+
+% ------------------------------------------------------------------------------
+% Mục lục & Danh mục Bảng biểu, Hình ảnh
+% ------------------------------------------------------------------------------
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
+\newpage
+
+% ------------------------------------------------------------------------------
+% Nội dung Chính của Báo Cáo
+% ------------------------------------------------------------------------------
+\pagenumbering{arabic}
+
+\input{src/chapters/01-introduction.tex}
+\input{src/chapters/02-company-overview.tex}
+\input{src/chapters/03-work-performed.tex}
+\input{src/chapters/04-results.tex}
+\input{src/chapters/05-conclusion.tex}
+
+% ------------------------------------------------------------------------------
+% Tài liệu Tham khảo
+% ------------------------------------------------------------------------------
+\newpage
+\printbibliography[heading=bibintoc, title={Tài liệu Tham khảo}]
+
+\end{document}

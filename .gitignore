@@ -1,0 +1,66 @@
+# LaTeX Build Artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.dvi
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.pre
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+
+# Output directory
+output/*
+!output/.gitkeep
+
+# Test outputs
+tests/outputs/*
+!tests/outputs/.gitkeep
+
+# Confidential / Local Reference Documents (Prevent accidental upload)
+docs/references/guidelines/*
+docs/references/papers/*
+docs/references/sample-reports/*
+!docs/references/guidelines/.gitkeep
+!docs/references/papers/.gitkeep
+!docs/references/sample-reports/.gitkeep
+
+# Python Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+build/
+dist/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor Settings
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~

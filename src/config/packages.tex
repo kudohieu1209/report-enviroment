@@ -1,0 +1,72 @@
+% ==============================================================================
+% Packages Configuration
+% ==============================================================================
+
+% Ngôn ngữ & Mã hóa (Chuẩn Tiếng Việt T5)
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[english, vietnamese]{babel}
+
+% Định dạng trang & Lề
+\usepackage[a4paper, left=3.5cm, right=2.0cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing % Giãn dòng 1.5
+
+% Toán học
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{mathtools}
+
+% Bảng biểu & Hình ảnh
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{tikz}
+
+% Trích dẫn & Thư mục tham khảo
+\usepackage[backend=biber, style=numeric-comp, sorting=none]{biblatex}
+
+% Liên kết chéo & PDF Meta
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=blue,
+    urlcolor=blue,
+    bookmarksnumbered=true
+}
+
+% Code Listing
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+% Tiêu đề Chương Mục
+\usepackage{titlesec}
+\usepackage{fancyhdr}

@@ -8,6 +8,7 @@ Script tự động biên dịch báo cáo LaTeX sang PDF:
 4. Kiểm tra tính toàn vẹn của PDF mới sinh trước khi kết luận thành công
 """
 
+import argparse
 import os
 import shutil
 import subprocess
@@ -62,8 +63,11 @@ def check_log_for_fatal_errors(log_file):
             return True, f"Phát hiện lỗi nghiêm trọng trong log: {indicator}"
     return False, ""
 
-def build_pdf():
-    base_dir = Path(__file__).resolve().parent.parent
+def build_pdf(base_dir=None):
+    if base_dir is None:
+        base_dir = Path(__file__).resolve().parent.parent
+    else:
+        base_dir = Path(base_dir).resolve()
     src_dir = base_dir / 'src'
     output_dir = base_dir / 'output'
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -114,27 +118,33 @@ def build_pdf():
     # 3. Quy trình thủ công chuẩn: pdflatex -> biber -> pdflatex -> pdflatex
     if not success and shutil.which("pdflatex"):
         print("[+] Chạy quy trình thủ công: pdflatex -> biber -> pdflatex -> pdflatex...")
+        manual_ok = True
         
         # Bước 1: pdflatex lần 1
         print("\n--- Bước 1/4: Khởi tạo aux và bcf ---")
-        run_command(["pdflatex", "-interaction=nonstopmode", f"-output-directory={output_dir}", str(main_tex)], base_dir)
+        ok, _ = run_command(["pdflatex", "-interaction=nonstopmode", f"-output-directory={output_dir}", str(main_tex)], base_dir)
+        manual_ok = manual_ok and ok
 
         # Bước 2: biber (bắt buộc cho biblatex backend=biber)
         print("\n--- Bước 2/4: Xử lý tài liệu tham khảo (Biber) ---")
         bcf_file = output_dir / "main.bcf"
         if bcf_file.exists():
             if shutil.which("biber"):
-                run_command(["biber", f"--input-directory={output_dir}", f"--output-directory={output_dir}", "main"], base_dir)
+                ok, _ = run_command(["biber", f"--input-directory={output_dir}", f"--output-directory={output_dir}", "main"], base_dir)
+                manual_ok = manual_ok and ok
             else:
-                print("[WARN] File cấu hình biblatex (main.bcf) tồn tại nhưng không tìm thấy công cụ 'biber' trên PATH.")
+                print("[ERROR] File cấu hình biblatex (main.bcf) tồn tại nhưng không tìm thấy công cụ 'biber' trên PATH.")
+                manual_ok = False
         
         # Bước 3: pdflatex lần 2
         print("\n--- Bước 3/4: Cập nhật nhãn và trích dẫn ---")
-        run_command(["pdflatex", "-interaction=nonstopmode", f"-output-directory={output_dir}", str(main_tex)], base_dir)
+        ok, _ = run_command(["pdflatex", "-interaction=nonstopmode", f"-output-directory={output_dir}", str(main_tex)], base_dir)
+        manual_ok = manual_ok and ok
 
         # Bước 4: pdflatex lần 3
         print("\n--- Bước 4/4: Hoàn thiện liên kết tham chiếu chéo ---")
-        run_command(["pdflatex", "-interaction=nonstopmode", f"-output-directory={output_dir}", str(main_tex)], base_dir)
+        ok, _ = run_command(["pdflatex", "-interaction=nonstopmode", f"-output-directory={output_dir}", str(main_tex)], base_dir)
+        manual_ok = manual_ok and ok
 
         # Kiểm tra tính toàn vẹn của PDF mới tạo
         has_fatal, fatal_msg = check_log_for_fatal_errors(log_file)
@@ -142,8 +152,10 @@ def build_pdf():
             print(f"\n[FAIL] Biên dịch thất bại: {fatal_msg}")
             sys.exit(1)
 
-        if target_pdf.exists() and target_pdf.stat().st_size > 0 and target_pdf.stat().st_mtime >= build_start_time - 1:
+        if manual_ok and target_pdf.exists() and target_pdf.stat().st_size > 0 and target_pdf.stat().st_mtime >= build_start_time - 1:
             success = True
+        elif not manual_ok:
+            print("\n[FAIL] Một hoặc nhiều bước biên dịch thủ công đã thất bại.")
 
     if not shutil.which("pdflatex") and not shutil.which("latexmk"):
         print("[!] Không tìm thấy trình biên dịch LaTeX (pdflatex hoặc latexmk) trên hệ thống.")
@@ -157,5 +169,11 @@ def build_pdf():
         print("\n[FAIL] Biên dịch thất bại. Không tạo được file PDF mới hợp lệ.")
         sys.exit(1)
 
+def main():
+    parser = argparse.ArgumentParser(description="Biên dịch tài liệu LaTeX sang output/report.pdf")
+    parser.add_argument("--base-dir", type=str, default=None, help="Thư mục gốc dự án chứa src/")
+    args = parser.parse_args()
+    build_pdf(args.base_dir)
+
 if __name__ == '__main__':
-    build_pdf()
+    main()

@@ -119,23 +119,33 @@ def validate_latex(base_dir, is_strict=False):
     # 3. Kiểm tra file hình ảnh
     print("\n[3] KIỂM TRA FILE HÌNH ẢNH (IMAGES / FIGURES):")
     missing_imgs = []
+    unsupported_imgs = []
+    latex_supported_exts = ['.pdf', '.png', '.jpg', '.jpeg', '.eps']
     for img, f, l in includes:
         full_img_path = base_dir / img
         found = False
+        explicit_ext = Path(img).suffix.lower()
         if full_img_path.exists():
             found = True
+            if explicit_ext == '.svg':
+                unsupported_imgs.append((img, f, l))
         else:
-            for ext in ['.pdf', '.png', '.jpg', '.jpeg', '.eps', '.svg']:
+            for ext in latex_supported_exts:
                 if (base_dir / (img + ext)).exists():
                     found = True
                     break
+            if not found and (base_dir / (img + '.svg')).exists():
+                unsupported_imgs.append((img + '.svg', f, l))
+                found = True
         if not found:
             missing_imgs.append((img, f, l))
 
-    if missing_imgs:
+    if missing_imgs or unsupported_imgs:
         has_error = True
         for img, f, l in missing_imgs:
             print(f"   ❌ Missing image: '{img}' được gọi tại {f}:{l}")
+        for img, f, l in unsupported_imgs:
+            print(f"   ❌ Unsupported SVG for pdflatex: '{img}' được gọi tại {f}:{l}; hãy chuyển sang PDF/PNG.")
     else:
         print("   ✅ Tất cả các file hình ảnh đều tồn tại.")
 

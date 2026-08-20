@@ -44,14 +44,21 @@ def get_bib_keys(bib_file_path):
         keys.add(match.group(1).strip())
     return keys
 
-def get_cited_keys(src_dir):
+def add_key_location(key_map, key, file, line_num):
+    if key not in key_map:
+        key_map[key] = []
+    key_map[key].append((file, line_num))
+
+def get_tex_bib_references(src_dir):
     cited_keys = {}
+    nocite_keys = {}
+    has_nocite_all = False
     if not src_dir.exists():
-        return cited_keys
+        return cited_keys, nocite_keys, has_nocite_all
     
     # Hỗ trợ đầy đủ các lệnh cite chuẩn và biblatex kèm 0-2 cặp ngoặc vuông [arg1][arg2]
     cite_pattern = re.compile(
-        r'\\(?:cite|autocite|textcite|parencite|footcite|nocite|citep|citet|citeauthor|citeyear|Cite|Autocite|Textcite|Parencite|Footcite)'
+        r'\\(cite|autocite|textcite|parencite|footcite|nocite|citep|citet|citeauthor|citeyear|Cite|Autocite|Textcite|Parencite|Footcite)'
         r'(?:\[[^\]]*\]){0,2}\s*\{([^}]+)\}'
     )
     
@@ -63,13 +70,23 @@ def get_cited_keys(src_dir):
                     for line_num, line in enumerate(f, 1):
                         clean_line = re.sub(r'(?<!\\)%.*', '', line)
                         for match in cite_pattern.finditer(clean_line):
-                            raw_keys = match.group(1)
+                            command = match.group(1).lower()
+                            raw_keys = match.group(2)
                             for k in raw_keys.split(','):
                                 key = k.strip()
-                                if key:
-                                    if key not in cited_keys:
-                                        cited_keys[key] = []
-                                    cited_keys[key].append((file, line_num))
+                                if not key:
+                                    continue
+                                if command == "nocite":
+                                    if key == "*":
+                                        has_nocite_all = True
+                                    else:
+                                        add_key_location(nocite_keys, key, file, line_num)
+                                else:
+                                    add_key_location(cited_keys, key, file, line_num)
+    return cited_keys, nocite_keys, has_nocite_all
+
+def get_cited_keys(src_dir):
+    cited_keys, _, _ = get_tex_bib_references(src_dir)
     return cited_keys
 
 def main():
@@ -97,11 +114,14 @@ def main():
         print(f"[FAIL] File bibliography.bib không tồn tại tại: {bib_file}")
         sys.exit(1)
 
-    cited_dict = get_cited_keys(src_dir)
+    cited_dict, nocite_dict, has_nocite_all = get_tex_bib_references(src_dir)
     cited_keys = set(cited_dict.keys())
+    nocite_keys = set(nocite_dict.keys())
+    referenced_keys = cited_keys | nocite_keys
 
     print(f"[*] Tổng số entries trong {bib_file.name}: {len(bib_keys)}")
     print(f"[*] Tổng số unique citations trong src/: {len(cited_keys)}")
+    print(f"[*] Tổng số nocite entries trong src/: {'*' if has_nocite_all else len(nocite_keys)}")
     print("-" * 60)
 
     has_error = False
@@ -116,18 +136,18 @@ def main():
             has_error = True
 
     # 1. Kiểm tra trích dẫn thiếu (Missing citations)
-    missing = cited_keys - bib_keys
+    missing = referenced_keys - bib_keys
     if missing:
         has_error = True
         print(f"[FAIL] PHÁT HIỆN {len(missing)} TRÍCH DẪN THIẾU TRONG BIBLIOGRAPHY:")
         for m in sorted(missing):
-            locations = ", ".join([f"{f}:{l}" for f, l in cited_dict[m]])
+            locations = ", ".join([f"{f}:{l}" for f, l in (cited_dict.get(m) or nocite_dict.get(m) or [])])
             print(f"   ❌ '{m}' -> được gọi tại: {locations}")
     else:
         print("[PASS] Tất cả các trích dẫn trong văn bản đều có trong .bib!")
 
     # 2. Kiểm tra entries không dùng (Unused entries)
-    unused = bib_keys - cited_keys
+    unused = set() if has_nocite_all else bib_keys - referenced_keys
     if unused:
         print(f"\n[WARN] Phát hiện {len(unused)} mục trong .bib chưa được trích dẫn:")
         for u in sorted(unused):

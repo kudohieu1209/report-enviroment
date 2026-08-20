@@ -35,4 +35,23 @@ Danh mục chi tiết 38 loại sơ đồ được phân loại theo cấu trúc
 22. **`type-pyramid`**: Tháp phân cấp (Tháp Maslow, Tháp kiểm thử Testing Pyramid).
 23. **`type-fishbone`**: Sơ đồ xương cá Ishikawa tìm nguyên nhân gốc rễ.
 24. **`type-wardley`**: Bản đồ chiến lược công nghệ Wardley Map.
-25. ... và 14 biến thể mở rộng khác.
+25. **`type-mind-map`**: Bản đồ tư duy phân nhánh khái niệm, phạm vi hoặc ý tưởng.
+
+## 6. Phụ thuộc & Mạng lưới (Dependencies & Networks)
+26. **`type-network-topology`**: Sơ đồ mạng máy chủ, subnet, gateway, firewall và kết nối.
+27. **`type-api-map`**: Bản đồ endpoint/API, client, service và contract chính.
+28. **`type-event-flow`**: Luồng event-driven/pub-sub giữa producer, broker và consumer.
+29. **`type-call-graph`**: Quan hệ gọi hàm/module/service trong hệ thống.
+30. **`type-pipeline`**: Pipeline xử lý dữ liệu, CI/CD hoặc ETL theo từng stage.
+
+## 7. Vận hành & Bảo mật (Operations & Security)
+31. **`type-threat-model`**: Threat model, trust boundary, asset và vector tấn công.
+32. **`type-access-control`**: Vai trò, quyền hạn, policy và phạm vi truy cập.
+33. **`type-observability`**: Luồng log, metric, trace, alert và dashboard vận hành.
+34. **`type-incident-response`**: Quy trình phát hiện, phân loại, xử lý và hậu kiểm sự cố.
+
+## 8. Thiết kế Sản phẩm & Tương tác (Product & Interaction)
+35. **`type-wireflow`**: Kết hợp wireframe mức thấp với luồng chuyển màn hình.
+36. **`type-user-flow`**: Luồng thao tác của người dùng qua các bước nghiệp vụ.
+37. **`type-information-architecture`**: Cấu trúc nội dung, navigation và phân cấp màn hình.
+38. **`type-decision-tree`**: Cây quyết định với điều kiện rẽ nhánh và kết quả cuối.

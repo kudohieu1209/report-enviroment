@@ -43,11 +43,15 @@ Final build (Biên dịch bản nộp chính thức)
 - [ ] Số liệu trong bảng (`Table`) có khớp với phân tích trong văn bản và biểu đồ (`Figure`) không?
 - [ ] Các kết quả so sánh có đi kèm điều kiện thực nghiệm rõ ràng không?
 - [ ] Đã chỉ ra được nguyên nhân khi kết quả không đạt như kỳ vọng (Failure cases) chưa?
+- [ ] Biểu đồ từ `academic-charting` có dùng đúng dữ liệu, đơn vị, nhãn trục, chú giải và phạm vi giá trị đã mô tả trong văn bản không?
 
 ### D. Tính Nhất quán & Toàn vẹn Kỹ thuật (Consistency & Integrity)
 - [ ] Thuật ngữ chuyên ngành có được dùng thống nhất từ đầu đến cuối không?
+- [ ] Sơ đồ từ `diagram-design` có khớp với mô tả kỹ thuật trong văn bản về actor/service, hướng mũi tên, luồng dữ liệu, trust boundary, trạng thái và quan hệ phụ thuộc không?
+- [ ] Không có sơ đồ nào thêm thành phần, bước xử lý, database, API hoặc kết nối không được giải thích trong nội dung báo cáo.
+- [ ] Mọi hình kiến trúc/quy trình/ERD/sequence đều có chú thích và đoạn văn giải thích trực tiếp ngay gần vị trí nhúng.
 - [ ] **Chạy kiểm tra tự động**:
-  ```powershell
+  ```console
   # Trong quá trình soạn thảo:
   python scripts/validate_citations.py
   python scripts/validate_report.py

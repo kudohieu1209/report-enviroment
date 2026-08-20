@@ -35,7 +35,7 @@ report-environment/
 │       ├── literature-synthesis/ # Tổng hợp đa nguồn, ma trận tài liệu
 │       ├── citation-bibtex/      # Quản lý & kiểm tra file .bib
 │       ├── academic-charting/    # Vẽ biểu đồ khoa học số liệu (Loss, Bar, Plot)
-│       ├── diagram-design/       # Vẽ 38 loại sơ đồ kiến trúc/quy trình Editorial SVG
+│       ├── diagram-design/       # Vẽ 38 loại sơ đồ kiến trúc/quy trình Editorial SVG/PDF
 │       ├── document-compiler/    # Quy trình biên dịch PDF/DOCX
 │       └── peer-review-audit/    # Phản biện, soát lỗi toàn diện
 │
@@ -54,6 +54,9 @@ report-environment/
 │   │   ├── packages.tex
 │   │   ├── macros.tex
 │   │   └── metadata.tex
+│   ├── frontmatter/              # Tóm tắt và lời cảm ơn theo guideline
+│   │   ├── abstract.tex
+│   │   └── acknowledgments.tex
 │   └── chapters/                 # Các chương nội dung dạng template sạch
 │       ├── 01-introduction.tex
 │       ├── 02-company-overview.tex
@@ -117,8 +120,8 @@ Khi thực hiện một báo cáo, Agent và người dùng phối hợp theo pi
 
 ## 🛠️ Bộ Lệnh Command Line
 
-```powershell
-# 1. Chạy toàn bộ Smoke Test Suite tự động (9/9 test cases độc lập)
+```console
+# 1. Chạy toàn bộ Smoke Test Suite tự động
 python tests/smoke/test_smoke.py
 
 # 2. Kiểm tra tính toàn vẹn của trích dẫn BibTeX

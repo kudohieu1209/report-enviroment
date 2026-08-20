@@ -41,12 +41,17 @@ Skill này chuyên trách về **sơ đồ kiến trúc hệ thống, lưu đồ
 
 ## 2. 38 Loại Sơ đồ Hỗ trợ (Diagram Types Selection)
 
+Đọc `references/types-guide.md` khi cần chọn loại sơ đồ cụ thể hoặc kiểm tra tên `type-*`. Không tự đặt thêm loại ngoài catalog nếu người dùng không yêu cầu biến thể mới.
+
 | Phân nhóm | Các loại sơ đồ tiêu biểu | Khi nào sử dụng? |
 | :--- | :--- | :--- |
 | **Kiến trúc & Hệ thống** | `type-architecture`, `type-deployment`, `type-dependency`, `type-layers`, `type-nested` | Mô tả Microservices, Cloud AWS/GCP, Kiến trúc phân tầng, Quan hệ phụ thuộc package. |
 | **Quy trình & Luồng** | `type-flowchart`, `type-sequence`, `type-swimlane`, `type-state`, `type-journey` | Luồng xử lý nghiệp vụ, Sequence OAuth2/API call, Máy trạng thái (State Machine), Phân quyền. |
 | **Dữ liệu & Cấu trúc** | `type-er`, `type-db-schema`, `type-uml-class`, `type-tree`, `type-sankey` | Sơ đồ quan hệ thực thể cơ sở dữ liệu, Cấu trúc cây thư mục, Sơ đồ lớp UML, Luồng phân phối dữ liệu. |
-| **Phân tích & Chiến lược** | `type-quadrant`, `type-timeline`, `type-venn`, `type-pyramid`, `type-fishbone`, `type-wardley` | Ma trận 4 góc (Impact vs. Effort), Lộ trình phát triển (Roadmap), Phân tích nguyên nhân gốc rễ. |
+| **Phân tích & Chiến lược** | `type-quadrant`, `type-timeline`, `type-venn`, `type-pyramid`, `type-fishbone`, `type-wardley`, `type-mind-map` | Ma trận 4 góc (Impact vs. Effort), Lộ trình phát triển (Roadmap), Phân tích nguyên nhân gốc rễ. |
+| **Phụ thuộc & Mạng lưới** | `type-network-topology`, `type-api-map`, `type-event-flow`, `type-call-graph`, `type-pipeline` | Mạng, API, pub/sub, call graph, CI/CD hoặc ETL pipeline. |
+| **Vận hành & Bảo mật** | `type-threat-model`, `type-access-control`, `type-observability`, `type-incident-response` | Trust boundary, quyền truy cập, telemetry, incident response. |
+| **Sản phẩm & Tương tác** | `type-wireflow`, `type-user-flow`, `type-information-architecture`, `type-decision-tree` | Luồng màn hình, luồng người dùng, cấu trúc thông tin, cây quyết định. |
 
 ---
 

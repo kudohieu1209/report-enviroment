@@ -25,6 +25,8 @@ Skill này hướng dẫn quy trình lập dàn ý và soạn thảo nội dung 
 - **Methodology (Methods)**: Kiến trúc mô hình, công thức toán học, thuật toán đề xuất.
 - **Experiments & Results**: Thiết lập thử nghiệm, bộ dữ liệu, số liệu định lượng và thảo luận (Discussion).
 - **Conclusion**: Tóm tắt đóng góp, hạn chế và hướng phát triển.
+- **Abstract / Tóm tắt**: Viết sau cùng, 150-300 từ hoặc theo guideline, nêu bối cảnh, mục tiêu, phương pháp, kết quả chính và đóng góp; không trích dẫn, không mở rộng luận điểm mới.
+- **Acknowledgments / Lời cảm ơn**: Viết ngắn gọn, trang trọng, cảm ơn đơn vị/cá nhân hỗ trợ theo đúng quy định; không đưa nội dung kỹ thuật hoặc kết quả nghiên cứu vào phần này.
 
 ### B. Báo cáo Thực tập Doanh nghiệp (Internship Report)
 - **Chương 1 (Mở đầu - Introduction)**: Bối cảnh, lý do chọn đề tài, mục tiêu và phạm vi thực tập.
@@ -46,12 +48,17 @@ Skill này hướng dẫn quy trình lập dàn ý và soạn thảo nội dung 
 
 1. **Đối chiếu Requirement Matrix**: Đọc `docs/notes/requirement_matrix.md` để nắm rõ các mục bắt buộc.
 2. **Lập Dàn ý Chi tiết (Outline)**: Tạo khung các mục con (`\section`, `\subsection`) trong `docs/drafts/outline.md`.
-3. **Soạn thảo Từng Đoạn (Paragraph Drafting)**: Áp dụng mô hình **PEEL** (Point - Evidence - Explanation - Link):
+3. **Xác định phần đầu tài liệu (Frontmatter)**:
+   - Nếu Requirement Matrix hoặc guideline yêu cầu Abstract/Tóm tắt, viết trong `src/frontmatter/abstract.tex` và đặt trước mục lục.
+   - Nếu guideline yêu cầu Lời cảm ơn, viết trong `src/frontmatter/acknowledgments.tex`.
+   - Không thêm trích dẫn trong Abstract/Tóm tắt; không dùng Abstract để giới thiệu kết quả chưa được trình bày ở thân bài.
+4. **Soạn thảo Từng Đoạn (Paragraph Drafting)**: Áp dụng mô hình **PEEL** (Point - Evidence - Explanation - Link):
    - *Point*: Câu chủ đề nêu rõ luận điểm kỹ thuật.
    - *Evidence*: Dẫn chứng bằng số liệu bảng biểu, hình ảnh hoặc trích dẫn nguồn.
    - *Explanation*: Giải thích cơ chế, lý do hoặc ý nghĩa kỹ thuật.
    - *Link*: Mối liên hệ với mục tiêu chung của chương.
-4. **Tích hợp Tham chiếu & Đồ họa**:
-   - Chèn sơ đồ từ `diagram-design` (`figures/diagrams/`).
-   - Chèn biểu đồ số liệu từ `academic-charting` (`figures/charts/`).
+5. **Tích hợp Tham chiếu & Đồ họa**:
+   - Bắt buộc dùng `diagram-design` khi guideline yêu cầu sơ đồ hoặc khi văn bản mô tả kiến trúc hệ thống, luồng xử lý, ERD/schema, sequence, state machine, phân quyền/trust boundary hay pipeline có từ 3 thành phần/bước trở lên.
+   - Bắt buộc dùng `academic-charting` khi văn bản so sánh số liệu, trình bày xu hướng, phân phối, confusion matrix, benchmark hoặc kết quả thực nghiệm định lượng.
+   - Tùy chọn dùng sơ đồ/biểu đồ khi chỉ minh họa khái niệm đơn giản; không tạo hình nếu nó không làm lập luận rõ hơn.
    - Trích dẫn nguồn qua `citation-bibtex` (`\cite{...}`).

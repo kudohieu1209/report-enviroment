@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 r"""
 Comprehensive Automated Smoke Test Suite for Report Environment:
-1. Kiểm tra Citation Validator (PASS trên template sạch, FAIL khi thiếu .bib, FAIL khi thiếu key có bracket, FAIL khi strict)
-2. Kiểm tra Report Validator (PASS trên template sạch, FAIL khi gãy \ref, FAIL khi trùng label, FAIL khi thiếu ảnh, FAIL khi strict có \todo)
+1. Kiểm tra Citation Validator (PASS trên template sạch, FAIL khi thiếu .bib, FAIL khi thiếu key có bracket, FAIL khi strict, xử lý đúng \nocite)
+2. Kiểm tra Report Validator (PASS trên template sạch, FAIL khi gãy \ref, FAIL khi trùng label, FAIL khi thiếu ảnh/SVG, FAIL khi strict có \todo)
 3. Kiểm tra Render Chart thật sự vào tests/outputs/
 4. Kiểm tra Render Diagram thật sự vào tests/outputs/
 Tất cả các ca test lỗi (intentional FAIL) đều chạy trong thư mục tạm, bảo toàn 100% độ sạch của src/ và figures/.
@@ -44,8 +44,26 @@ def run_cmd(cmd, cwd=BASE_DIR):
     )
     return result.returncode, result.stdout, result.stderr
 
+def write_fake_tool(bin_dir, name, python_code):
+    script_path = bin_dir / f"{name}_shim.py"
+    script_path.write_text(python_code, encoding='utf-8')
+    if os.name == 'nt':
+        tool_path = bin_dir / f"{name}.cmd"
+        tool_path.write_text(
+            f'@echo off\r\n"{sys.executable}" "{script_path}" %*\r\nexit /b %ERRORLEVEL%\r\n',
+            encoding='utf-8'
+        )
+    else:
+        tool_path = bin_dir / name
+        tool_path.write_text(
+            f"#!{sys.executable}\n" + python_code,
+            encoding='utf-8'
+        )
+        tool_path.chmod(0o755)
+    return tool_path
+
 def test_citations_validator_pass_and_fail():
-    print("[1/4] Kiểm tra Citation Validator (PASS & Intentional FAIL)...")
+    print("[1/5] Kiểm tra Citation Validator (PASS & Intentional FAIL)...")
     
     # 1. PASS trên template sạch
     code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_citations.py')])
@@ -57,7 +75,7 @@ def test_citations_validator_pass_and_fail():
         tmp_path = Path(tmpdir)
         tmp_src = tmp_path / 'src'
         tmp_src.mkdir()
-        
+
         (tmp_src / 'bibliography.bib').write_text("@article{real2026, author={A}, title={B}, year={2026}}", encoding='utf-8')
         (tmp_src / 'main.tex').write_text(r"\cite[tr. 10]{fake_key_123}", encoding='utf-8')
         
@@ -82,8 +100,36 @@ def test_citations_validator_pass_and_fail():
     assert code != 0, "Chế độ --strict không báo lỗi khi báo cáo có 0 citations"
     print("   ✅ FAIL DETECTED: Chế độ --strict bắt chính xác khi báo cáo cuối cùng thiếu trích dẫn.")
 
+    # 5. PASS normal + FAIL strict: \nocite{*} không phải citation thật và không tạo missing key '*'
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        tmp_src = tmp_path / 'src'
+        tmp_src.mkdir()
+        (tmp_src / 'bibliography.bib').write_text("@article{real2026, author={A}, title={B}, year={2026}}", encoding='utf-8')
+        (tmp_src / 'main.tex').write_text(r"\nocite{*}", encoding='utf-8')
+
+        code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_citations.py')], cwd=tmp_path)
+        assert code == 0, f"Validator hiểu sai \\nocite{{*}} thành missing citation: {out}"
+        code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_citations.py'), '--strict'], cwd=tmp_path)
+        assert code != 0, "Chế độ --strict không phân biệt \\nocite với citation thật"
+        assert "'*'" not in out, "\\nocite{*} bị báo sai thành key thiếu"
+    print("   ✅ PASS/FAIL DETECTED: \\nocite{*} không bị tính là citation thật hoặc missing key.")
+
+    # 6. FAIL: \nocite{key} vẫn phải tồn tại trong .bib
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        tmp_src = tmp_path / 'src'
+        tmp_src.mkdir()
+        (tmp_src / 'bibliography.bib').write_text("", encoding='utf-8')
+        (tmp_src / 'main.tex').write_text(r"\nocite{fake_nocite}", encoding='utf-8')
+
+        code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_citations.py')], cwd=tmp_path)
+        assert code != 0, "Validator không bắt được \\nocite key thiếu trong .bib"
+        assert "fake_nocite" in out
+    print("   ✅ FAIL DETECTED: \\nocite{key} vẫn được đối chiếu với bibliography.bib.")
+
 def test_report_validator_pass_and_fail():
-    print("\n[2/4] Kiểm tra Report Integrity Validator (PASS & Intentional FAIL)...")
+    print("\n[2/5] Kiểm tra Report Integrity Validator (PASS & Intentional FAIL)...")
     
     # 1. PASS trên template sạch (normal mode)
     code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_report.py')])
@@ -126,13 +172,69 @@ def test_report_validator_pass_and_fail():
         assert code != 0, "Validator không bắt được lỗi thiếu file hình ảnh"
     print("   ✅ FAIL DETECTED: Bắt chính xác lỗi thiếu file hình ảnh (Missing image).")
 
-    # 5. FAIL trong chế độ --strict khi còn \todo và metadata placeholder
+    # 5. FAIL: SVG không tương thích trực tiếp với pipeline pdflatex canonical
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        tmp_src = tmp_path / 'src'
+        svg_dir = tmp_path / 'figures' / 'diagrams'
+        tmp_src.mkdir()
+        svg_dir.mkdir(parents=True)
+        (svg_dir / 'architecture.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>', encoding='utf-8')
+        (tmp_src / 'test.tex').write_text(r"\includegraphics{figures/diagrams/architecture.svg}", encoding='utf-8')
+        code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_report.py')], cwd=tmp_path)
+        assert code != 0, "Validator không bắt được SVG không tương thích pdflatex"
+        assert "Unsupported SVG" in out
+    print("   ✅ FAIL DETECTED: Bắt chính xác lỗi nhúng SVG trực tiếp trong pdflatex.")
+
+    # 6. FAIL trong chế độ --strict khi còn \todo và metadata placeholder
     code, out, _ = run_cmd([sys.executable, str(SCRIPTS_DIR / 'validate_report.py'), '--strict'])
     assert code != 0, "Chế độ --strict không bắt được \\todo và metadata placeholder trong template"
     print("   ✅ FAIL DETECTED: Chế độ --strict bắt chính xác khi còn \\todo hoặc metadata mẫu.")
 
+def test_build_script_rejects_partial_manual_outputs():
+    print("\n[3/5] Kiểm tra Build Script không false-success khi tool trả mã lỗi...")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        tmp_src = tmp_path / 'src'
+        tmp_bin = tmp_path / 'bin'
+        tmp_src.mkdir()
+        tmp_bin.mkdir()
+        (tmp_src / 'main.tex').write_text(r"\documentclass{article}\begin{document}Broken build\end{document}", encoding='utf-8')
+
+        write_fake_tool(tmp_bin, 'latexmk', "import sys\nsys.exit(1)\n")
+        write_fake_tool(tmp_bin, 'pdflatex', r"""
+import pathlib
+import sys
+
+outdir = pathlib.Path("output")
+for arg in sys.argv[1:]:
+    if arg.startswith("-output-directory="):
+        outdir = pathlib.Path(arg.split("=", 1)[1])
+outdir.mkdir(parents=True, exist_ok=True)
+(outdir / "main.pdf").write_bytes(b"%PDF-1.4\n% partial output from failed pdflatex\n")
+(outdir / "main.log").write_text("simulated non-fatal log\n", encoding="utf-8")
+(outdir / "main.bcf").write_text("<bcf/>", encoding="utf-8")
+sys.exit(1)
+""")
+
+        env = os.environ.copy()
+        env['PATH'] = str(tmp_bin)
+        result = subprocess.run(
+            [sys.executable, str(SCRIPTS_DIR / 'build.py'), '--base-dir', str(tmp_path)],
+            cwd=BASE_DIR,
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace'
+        )
+
+        assert result.returncode != 0, f"Build script false-success dù pdflatex fail: {result.stdout}"
+        assert not (tmp_path / 'output' / 'report.pdf').exists(), "Build script đã copy report.pdf từ output không hợp lệ"
+    print("   ✅ FAIL DETECTED: build.py từ chối PDF bán thành phẩm khi tool trả mã lỗi.")
+
 def test_chart_rendering():
-    print("\n[3/4] Kiểm tra Render Chart thật sự vào tests/outputs/...")
+    print("\n[4/5] Kiểm tra Render Chart thật sự vào tests/outputs/...")
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     try:
         from scripts.render_chart import generate_sample_charts
@@ -148,7 +250,7 @@ def test_chart_rendering():
         sys.exit(1)
 
 def test_diagram_rendering():
-    print("\n[4/4] Kiểm tra Render Diagram thật sự vào tests/outputs/...")
+    print("\n[5/5] Kiểm tra Render Diagram thật sự vào tests/outputs/...")
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
     svg_content = """<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
   <rect width="400" height="100" fill="#fafafa" rx="6"/>
@@ -169,10 +271,11 @@ def main():
     print("=" * 60)
     test_citations_validator_pass_and_fail()
     test_report_validator_pass_and_fail()
+    test_build_script_rejects_partial_manual_outputs()
     test_chart_rendering()
     test_diagram_rendering()
     print("\n" + "=" * 60)
-    print("🎉 TẤT CẢ 9/9 TEST CASES (PASS, FAIL, STRICT, ASSETS) ĐỀU PASS 100%!")
+    print("🎉 TẤT CẢ 13/13 TEST CASES (PASS, FAIL, STRICT, ASSETS, BUILD) ĐỀU PASS 100%!")
     print("=" * 60)
 
 if __name__ == '__main__':

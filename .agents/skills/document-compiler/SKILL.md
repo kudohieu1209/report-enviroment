@@ -15,26 +15,26 @@ Skill này hướng dẫn quy trình biên dịch toàn bộ tài liệu nguồn
 
 ### Sử dụng Script Tự động:
 Chạy script tự động trong thư mục `scripts/`:
-```powershell
+```console
 python scripts/build.py
 ```
 
 ### Quy trình Biên dịch Từng bước (4 bước giải quyết Cross-reference & BibTeX):
 1. **Lần 1 (Tạo file aux & lof/lot/toc)**:
-   ```powershell
+   ```console
    pdflatex -interaction=nonstopmode -output-directory=output src/main.tex
    ```
-2. **Lần 2 (Biên dịch BibTeX / Biber)**:
-   ```powershell
+2. **Lần 2 (Biên dịch Biber)**:
+   ```console
    biber --input-directory=output --output-directory=output main
-   # hoặc: bibtex output/main
    ```
+   Template này dùng `biblatex` với `backend=biber`, vì vậy không dùng `bibtex` làm fallback.
 3. **Lần 3 (Cập nhật số trang & nhãn trích dẫn)**:
-   ```powershell
+   ```console
    pdflatex -interaction=nonstopmode -output-directory=output src/main.tex
    ```
 4. **Lần 4 (Hoàn tất liên kết tham chiếu chéo)**:
-   ```powershell
+   ```console
    pdflatex -interaction=nonstopmode -output-directory=output src/main.tex
    ```
 
@@ -46,7 +46,7 @@ python scripts/build.py
 > File **PDF** là sản phẩm đầu ra chính thức (*Canonical Output*) để nộp và bảo vệ báo cáo. Tính năng xuất ra file **DOCX** là tùy chọn bổ trợ phục vụ nhu cầu chỉnh sửa văn bản thô hoặc gửi phản hồi qua Word Track Changes.
 
 ### Xuất DOCX bằng Pandoc (nếu hệ thống đã cài đặt Pandoc):
-```powershell
+```console
 pandoc src/main.tex -o output/report.docx --bibliography=src/bibliography.bib --citeproc
 ```
 

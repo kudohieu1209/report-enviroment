@@ -62,6 +62,6 @@ Skill này hướng dẫn quy trình tạo, cập nhật, chuẩn hóa và kiể
 1. **Kiểm tra thiếu mục**: Mọi `\cite{key}` trong thư mục `src/chapters/` phải có `@type{key, ...}` trong `src/bibliography.bib`.
 2. **Kiểm tra mục thừa (Unused entries)**: Phát hiện các mục có trong `.bib` nhưng không bao giờ được trích dẫn trong văn bản.
 3. **Chạy script kiểm tra tự động**:
-   ```powershell
+   ```console
    python scripts/validate_citations.py
    ```
